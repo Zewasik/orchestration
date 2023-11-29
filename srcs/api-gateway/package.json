@@ -1,0 +1,11 @@
+{
+  "name": "api-gateway",
+  "version": "1.0.0",
+  "description": "gateway to redirect requests to APIs",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

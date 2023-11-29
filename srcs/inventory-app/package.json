@@ -1,0 +1,11 @@
+{
+  "name": "inventory-app",
+  "version": "1.0.0",
+  "description": "api for storing and accesing movie",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
