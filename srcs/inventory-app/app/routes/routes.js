@@ -6,5 +6,7 @@ module.exports = function routes(controllers) {
   router.post("/movies", controllers.createMovie)
   router.delete("/movies", controllers.deleteAllMovies)
 
+  router.get("/movies/:id", controllers.getMovieById)
+
   return router
 }
