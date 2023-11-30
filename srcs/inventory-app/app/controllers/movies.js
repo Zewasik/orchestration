@@ -78,10 +78,23 @@ function updateMovieById(req, res) {
     .finally(() => res.end())
 }
 
+function deleteMovieById(req, res) {
+  const { id } = req.params
+
+  pool
+    .query(`DELETE FROM movies WHERE id = $1`, [id])
+    .catch((err) => {
+      console.log(err)
+      res.status(500)
+    })
+    .finally(() => res.end())
+}
+
 module.exports = {
   getAllMovies,
   createMovie,
   deleteAllMovies,
   getMovieById,
   updateMovieById,
+  deleteMovieById,
 }

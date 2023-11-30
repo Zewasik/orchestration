@@ -8,6 +8,7 @@ module.exports = function routes(controllers) {
 
   router.get("/movies/:id", controllers.getMovieById)
   router.put("/movies/:id", controllers.updateMovieById)
+  router.delete("/movies/:id", controllers.deleteMovieById)
 
   return router
 }
