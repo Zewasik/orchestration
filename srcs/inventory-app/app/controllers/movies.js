@@ -8,8 +8,8 @@ const pool = new Pool({
   port: 5432,
 })
 
-async function getAllMovies(req, res) {
-  await pool
+function getAllMovies(req, res) {
+  pool
     .query("SELECT * FROM movies")
     .then((result) => res.json(result.rows))
     .catch((err) => {
@@ -19,6 +19,22 @@ async function getAllMovies(req, res) {
     })
 }
 
+function createMovie(req, res) {
+  const { title, description } = req.body
+
+  pool
+    .query("INSERT INTO movies(title, description) VALUES($1, $2)", [
+      title,
+      description,
+    ])
+    .catch((err) => {
+      console.log(err)
+      res.status(500)
+    })
+    .finally(() => res.end())
+}
+
 module.exports = {
   getAllMovies,
+  createMovie,
 }
