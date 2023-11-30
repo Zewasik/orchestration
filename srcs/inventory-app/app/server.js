@@ -6,7 +6,7 @@ const app = express()
 
 const port = 8080
 
-app.use(cors())
+app.use(cors(), express.json())
 app.use("/api", routes(controllers))
 
 app.listen(port, () => {
