@@ -19,6 +19,16 @@ function getAllMovies(req, res) {
     })
 }
 
+function deleteAllMovies(req, res) {
+  pool
+    .query("DELETE FROM movies")
+    .catch((err) => {
+      console.log(err)
+      res.status(500)
+    })
+    .finally(() => res.end())
+}
+
 function createMovie(req, res) {
   const { title, description } = req.body
 
@@ -37,4 +47,5 @@ function createMovie(req, res) {
 module.exports = {
   getAllMovies,
   createMovie,
+  deleteAllMovies,
 }
