@@ -7,6 +7,7 @@ module.exports = function routes(controllers) {
   router.delete("/movies", controllers.deleteAllMovies)
 
   router.get("/movies/:id", controllers.getMovieById)
+  router.put("/movies/:id", controllers.updateMovieById)
 
   return router
 }
