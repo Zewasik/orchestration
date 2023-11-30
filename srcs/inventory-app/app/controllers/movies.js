@@ -59,9 +59,29 @@ function getMovieById(req, res) {
     .finally(() => res.end())
 }
 
+function updateMovieById(req, res) {
+  const { id } = req.params
+  let setClause = []
+  let values = [id]
+
+  Object.entries(req.body).forEach(([key, value]) => {
+    setClause.push(`${key} = $${setClause.length + 2}`)
+    values.push(value)
+  })
+
+  pool
+    .query(`UPDATE movies SET ${setClause.join(", ")} WHERE id = $1`, values)
+    .catch((err) => {
+      console.log(err)
+      res.status(500)
+    })
+    .finally(() => res.end())
+}
+
 module.exports = {
   getAllMovies,
   createMovie,
   deleteAllMovies,
   getMovieById,
+  updateMovieById,
 }
