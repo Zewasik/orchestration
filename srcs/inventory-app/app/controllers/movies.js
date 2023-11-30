@@ -9,14 +9,16 @@ const pool = new Pool({
 })
 
 function getAllMovies(req, res) {
+  const title = `%${req.query.title || ""}%`
+
   pool
-    .query("SELECT * FROM movies")
+    .query("SELECT * FROM movies WHERE title ILIKE $1", [title])
     .then((result) => res.json(result.rows))
     .catch((err) => {
       console.log(err)
       res.status(500)
-      res.end()
     })
+    .finally(() => res.end())
 }
 
 function deleteAllMovies(req, res) {
@@ -44,8 +46,22 @@ function createMovie(req, res) {
     .finally(() => res.end())
 }
 
+function getMovieById(req, res) {
+  const { id } = req.params
+
+  pool
+    .query("SELECT * FROM movies WHERE id = $1", [id])
+    .then((result) => res.json(result.rows[0] || null))
+    .catch((err) => {
+      console.log(err)
+      res.status(500)
+    })
+    .finally(() => res.end())
+}
+
 module.exports = {
   getAllMovies,
   createMovie,
   deleteAllMovies,
+  getMovieById,
 }
