@@ -35,10 +35,14 @@ function createMovie(req, res) {
   const { title, description } = req.body
 
   pool
-    .query("INSERT INTO movies(title, description) VALUES($1, $2)", [
-      title,
-      description,
-    ])
+    .query(
+      "INSERT INTO movies(title, description) VALUES($1, $2) RETURNING id, title, description",
+      [title, description]
+    )
+    .then((result) => {
+      res.status(201)
+      res.json(result.rows[0])
+    })
     .catch((err) => {
       console.log(err)
       res.status(500)
@@ -51,7 +55,13 @@ function getMovieById(req, res) {
 
   pool
     .query("SELECT * FROM movies WHERE id = $1", [id])
-    .then((result) => res.json(result.rows[0] || null))
+    .then((result) => {
+      if (result.rowCount == 0) {
+        res.status(404)
+        return
+      }
+      res.json(result.rows[0])
+    })
     .catch((err) => {
       console.log(err)
       res.status(500)
@@ -70,7 +80,19 @@ function updateMovieById(req, res) {
   })
 
   pool
-    .query(`UPDATE movies SET ${setClause.join(", ")} WHERE id = $1`, values)
+    .query(
+      `UPDATE movies SET ${setClause.join(
+        ", "
+      )} WHERE id = $1 RETURNING id, title, description`,
+      values
+    )
+    .then((result) => {
+      if (result.rowCount == 0) {
+        res.status(404)
+        return
+      }
+      res.json(result.rows[0])
+    })
     .catch((err) => {
       console.log(err)
       res.status(500)
@@ -83,6 +105,13 @@ function deleteMovieById(req, res) {
 
   pool
     .query(`DELETE FROM movies WHERE id = $1`, [id])
+    .then((result) => {
+      if (result.rowCount == 0) {
+        res.status(404)
+        return
+      }
+      res.status(204)
+    })
     .catch((err) => {
       console.log(err)
       res.status(500)
