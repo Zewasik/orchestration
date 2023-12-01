@@ -1,5 +1,5 @@
 #!/bin/bash
-source ../.env
+source .env
 
 export PGPASSWORD=$BILLING_DB_PASSWORD
 
