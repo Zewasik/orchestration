@@ -10,5 +10,5 @@ app.use(cors(), express.json())
 app.use("/api", routes(controllers))
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
+  console.log(`InventoryAPI app is running on port ${port}`)
 })
