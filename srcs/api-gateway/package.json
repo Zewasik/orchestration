@@ -7,5 +7,10 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "http-proxy-middleware": "^2.0.6",
+    "cors": "^2.8.5",
+    "express": "^4.18.2"
+  }
 }
