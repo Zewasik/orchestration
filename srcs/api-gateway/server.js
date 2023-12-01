@@ -18,7 +18,7 @@ const swaggerOptions = {
       description: "API for billing and managing with movies",
     },
   },
-  apis: ["../inventory-app/app/routes/*.js"],
+  apis: ["../inventory-app/app/routes/*.js", "routes.js"],
 }
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions)
