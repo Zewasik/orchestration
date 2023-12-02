@@ -1,4 +1,4 @@
-const { DATABASE_USER, DATABASE_PASSWORD, DATABASE_NAME, DATABASE_HOST, DATABASE_PORT } = require('./config/config')
+const { DATABASE_USER, DATABASE_PASSWORD, DATABASE_NAME, DATABASE_HOST, DATABASE_PORT } = require('../config/config')
 const { Pool } = require("pg")
 
 const pool = new Pool({

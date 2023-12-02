@@ -1,5 +1,5 @@
 #!/bin/bash
-source ../.env
+source .env
 
 export PGPASSWORD=$INVENTORY_DB_PASSWORD
 

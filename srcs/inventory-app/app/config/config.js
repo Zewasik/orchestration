@@ -1,3 +1,5 @@
+require('dotenv').config({ path: '../../.env' })
+
 const PORT = process.env.INVENTORY_APP_PORT
 
 const DATABASE_USER = process.env.INVENTORY_PG_USER

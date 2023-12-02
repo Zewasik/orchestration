@@ -1,3 +1,5 @@
+require('dotenv').config({ path: '../../.env' })
+
 const RABBITMQ_QUEUE_NAME = process.env.RABBITMQ_QUEUE_NAME
 const RABBITMQ_HOST_ADDRESS = process.env.RABBITMQ_HOST_ADDRESS
 
