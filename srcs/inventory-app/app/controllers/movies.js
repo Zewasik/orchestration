@@ -1,11 +1,12 @@
+const { DATABASE_USER, DATABASE_PASSWORD, DATABASE_NAME, DATABASE_HOST, DATABASE_PORT } = require('../config/config')
 const { Pool } = require("pg")
 
 const pool = new Pool({
-  user: "inventory",
-  host: "localhost",
-  database: "movies",
-  password: "inventory",
-  port: 5432,
+  user: DATABASE_USER,
+  host: DATABASE_HOST,
+  database: DATABASE_NAME,
+  password: DATABASE_PASSWORD,
+  port: DATABASE_PORT,
 })
 
 function getAllMovies(req, res) {
