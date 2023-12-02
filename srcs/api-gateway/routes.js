@@ -1,15 +1,15 @@
 const amqp = require("amqplib/callback_api")
 const express = require("express")
+const { RABBITMQ_QUEUE_NAME, BILLING_HOST } = require("./config")
 
 const router = express.Router()
 
-const queueName = "billing_queue"
 let channel
-amqp.connect("amqp://localhost", (err, connection) => {
+amqp.connect(`amqp://${BILLING_HOST}`, (err, connection) => {
   if (!err) {
     connection.createChannel(async (err, newChannel) => {
       channel = newChannel
-      newChannel.assertQueue(queueName)
+      newChannel.assertQueue(RABBITMQ_QUEUE_NAME)
     })
   }
 
@@ -53,7 +53,7 @@ amqp.connect("amqp://localhost", (err, connection) => {
         return
       }
       const message = JSON.stringify(req.body)
-      channel.sendToQueue(queueName, Buffer.from(message))
+      channel.sendToQueue(RABBITMQ_QUEUE_NAME, Buffer.from(message))
     } finally {
       res.status(201)
       res.end()
