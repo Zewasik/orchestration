@@ -1,18 +1,28 @@
-require('dotenv').config({ path: '../../.env' })
+const fs = require('fs')
+const dotenv = require('dotenv')
 
-const PORT = process.env.INVENTORY_APP_PORT
+const envPaths = ['.env', '../../.env']
+const pathToEnv = envPaths.find(fs.existsSync)
 
-const DATABASE_USER = process.env.INVENTORY_PG_USER
-const DATABASE_PASSWORD = process.env.INVENTORY_DB_PASSWORD
-const DATABASE_NAME = process.env.INVENTORY_DB_NAME
-const DATABASE_HOST = process.env.DATABASE_HOST
-const DATABASE_PORT = process.env.DATABASE_PORT
+let em = {
+    PORT: 8080,
+    DATABASE_USER: 'user',
+    DATABASE_PASSWORD: 'secret',
+    DATABASE_NAME: 'db_name',
+    DATABASE_HOST: "localhost",
+    DATABASE_PORT: 5432,
+}
 
-module.exports = Object.freeze({
-    PORT,
-    DATABASE_USER,
-    DATABASE_PASSWORD,
-    DATABASE_NAME,
-    DATABASE_HOST,
-    DATABASE_PORT
-})
+if (pathToEnv) {
+    dotenv.config({ path: pathToEnv })
+
+    em.PORT = process.env.INVENTORY_APP_PORT
+
+    em.DATABASE_USER = process.env.INVENTORY_PG_USER
+    em.DATABASE_PASSWORD = process.env.INVENTORY_DB_PASSWORD
+    em.DATABASE_NAME = process.env.INVENTORY_DB_NAME
+    em.DATABASE_HOST = process.env.DATABASE_HOST
+    em.DATABASE_PORT = process.env.DATABASE_PORT
+}
+
+module.exports = Object.freeze(em)

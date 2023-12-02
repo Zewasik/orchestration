@@ -1,9 +1,19 @@
-require('dotenv').config({ path: '../../.env' })
+const fs = require('fs')
+const dotenv = require('dotenv')
 
-const PORT = process.env.API_GATEWAY_PORT
-const PROXY_TARGET = process.env.PROXY_TARGET
+const envPaths = ['.env', '../../.env']
+const pathToEnv = envPaths.find(fs.existsSync)
 
-module.exports = Object.freeze({
-    PORT,
-    PROXY_TARGET
-})
+let em = {
+    PORT: 3000,
+    PROXY_TARGET: "http://localhost:8080"
+}
+
+if (pathToEnv) {
+    dotenv.config({ path: pathToEnv })
+
+    em.PORT = process.env.API_GATEWAY_PORT
+    em.PROXY_TARGET = process.env.PROXY_TARGET
+}
+
+module.exports = Object.freeze(em)
