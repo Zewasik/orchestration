@@ -1,15 +1,15 @@
+const { RABBITMQ_QUEUE_NAME, RABBITMQ_HOST_ADDRESS } = require('./config/config')
 const amqplib = require('amqplib/callback_api')
 const controllers = require("./controllers/orders")
-const queue = 'billing_queue'
 
-amqplib.connect('amqp://localhost', (err, conn) => {
+amqplib.connect(`amqp://${RABBITMQ_HOST_ADDRESS}`, (err, conn) => {
     if (err) throw err
 
     conn.createChannel((err, channel) => {
         if (err) throw err
 
-        channel.assertQueue(queue)
-        channel.consume(queue, (msg) => {
+        channel.assertQueue(RABBITMQ_QUEUE_NAME)
+        channel.consume(RABBITMQ_QUEUE_NAME, (msg) => {
             const acknowledge = () => channel.ack(msg)
             const notAcknowledge = () => channel.nack(msg, false, false)
 
