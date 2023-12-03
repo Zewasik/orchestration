@@ -13,6 +13,9 @@ Vagrant.configure("2") do |config|
   config.vm.define "inventory_vm" do |inventory_vm|
     inventory_vm.vm.box = "generic/ubuntu2204"
 
+    inventory_vm.vm.hostname = "inventory-vm"
+    inventory_vm.vm.network "private_network", type: "static", ip: "192.168.56.10"
+
     inventory_vm.vm.provision "file", source: ".env", destination: "/home/vagrant/.env"
     inventory_vm.vm.provision "shell", path: "scripts/initialize-inventory-db.sh"
     
@@ -28,11 +31,13 @@ Vagrant.configure("2") do |config|
     SHELL
 
     inventory_vm.vm.synced_folder ".", "/vagrant", disabled: true
-    inventory_vm.vm.network "forwarded_port", guest: 8080, host: 8080, host_ip: "127.0.0.1"
   end
 
   config.vm.define "billing_vm" do |billing_vm|
     billing_vm.vm.box = "generic/ubuntu2204"
+
+    billing_vm.vm.hostname = "billing-vm"
+    billing_vm.vm.network "private_network", type: "static", ip: "192.168.56.20"
 
     billing_vm.vm.provision "file", source: ".env", destination: "/home/vagrant/.env"
     billing_vm.vm.provision "shell", path: "scripts/initialize-billing-db.sh"
@@ -54,5 +59,31 @@ Vagrant.configure("2") do |config|
     SHELL
 
     billing_vm.vm.synced_folder ".", "/vagrant", disabled: true
+  end
+
+  config.vm.define "gateway_vm" do |gateway_vm|
+    gateway_vm.vm.box = "generic/ubuntu2204"
+
+    gateway_vm.vm.provision "shell", inline: <<-SHELL
+      echo "192.168.56.10   inventory-vm" | sudo tee -a /etc/hosts
+      echo "192.168.56.20   billing-vm" | sudo tee -a /etc/hosts
+    SHELL
+
+    gateway_vm.vm.provision "file", source: ".env", destination: "/home/vagrant/.env"
+    gateway_vm.vm.provision "shell", path: "scripts/install-node.sh"
+    
+    gateway_vm.vm.provision "file", source: "srcs/api-gateway", destination: "/home/vagrant/"
+    gateway_vm.vm.provision "file", source: "srcs/inventory-app/app/routes", destination: "/home/vagrant/inventory-app/app/routes"
+
+    gateway_vm.vm.provision "shell", inline: <<-SHELL
+    #!/bin/bash
+      cd api-gateway
+      cp /home/vagrant/.env .
+      npm install
+      nohup npm start > /dev/null 2>&1 &
+    SHELL
+
+    gateway_vm.vm.synced_folder ".", "/vagrant", disabled: true
+    gateway_vm.vm.network "forwarded_port", guest: 3000, host: 3000, host_ip: "127.0.0.1"
   end
 end
