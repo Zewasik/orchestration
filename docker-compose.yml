@@ -1,0 +1,84 @@
+version: "3.9"
+
+services:
+  inventory-database:
+    image: postgres:13.9-alpine
+    container_name: inventory-database
+    volumes:
+      - inventory-database-volume:/var/lib/postgresql/data
+      - ./sql/init_inventory.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: always
+    environment:
+      POSTGRES_DB: ${INVENTORY_DB_NAME}
+      POSTGRES_USER: ${INVENTORY_DB_USER}
+      POSTGRES_PASSWORD: ${INVENTORY_DB_PASSWORD}
+
+  billing-database:
+    image: postgres:13.9-alpine
+    container_name: billing-database
+    volumes:
+      - billing-database-volume:/var/lib/postgresql/data
+      - ./sql/init_billing.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: always
+    environment:
+      POSTGRES_DB: ${BILLING_DB_NAME}
+      POSTGRES_USER: ${BILLING_DB_USER}
+      POSTGRES_PASSWORD: ${BILLING_DB_PASSWORD}
+
+  inventory-app:
+    build:
+      context: ./srcs/inventory-app
+      dockerfile: Dockerfile
+    container_name: inventory-app
+    restart: always
+    env_file:
+      - ./.env
+    depends_on:
+      - inventory-database
+
+  billing-app:
+    build:
+      context: ./srcs/billing-app
+      dockerfile: Dockerfile
+    container_name: billing-app
+    restart: always
+    env_file:
+      - ./.env
+    depends_on:
+      billing-database:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+
+  rabbitmq:
+    image: "rabbitmq:3.13.0-rc.2-alpine"
+    container_name: RabbitMQ
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 30s
+      retries: 3
+    environment:
+      RABBITMQ_QUEUE_NAME: ${RABBITMQ_QUEUE_NAME}
+    restart: always
+
+  api-gateway-app:
+    build:
+      context: ./srcs/api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway-app
+    volumes:
+      - api-gateway-logs:/var/logs/api-gateway
+    ports:
+      - "3000:3000"
+    restart: always
+    env_file:
+      - ./.env
+    depends_on:
+      - inventory-app
+      - billing-app
+
+volumes:
+  inventory-database-volume:
+  billing-database-volume:
+  api-gateway-logs:
