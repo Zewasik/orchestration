@@ -1,4 +1,4 @@
-# crud-master
+# play-with-containers
 
 This documentation will help you understand the architecture, setup, and usage of the movie streaming platform built using microservices infrastructure.
 
@@ -12,12 +12,12 @@ This documentation will help you understand the architecture, setup, and usage o
    - [API Gateway](#api-gateway)
    - [Inventory API](#inventory-api)
    - [Billing API](#billing-api)
-4. [Virtual Machines](#virtual-machines)
+4. [Docker Compose](#docker-compose)
 5. [Project Organization](#project-organization)
 
 ## 1. Project Overview <a name="project-overview"></a>
 
-The crud-master project implements a movie streaming platform with two microservices: `Inventory` and `Billing`. The API Gateway manages communication between these services, using HTTP for `Inventory` and RabbitMQ for `Billing`. The project is organized into virtual machines (VMs) to simulate a production environment.
+The play-with-containers project implements a movie streaming platform with six microservices: `Inventory`, `Billing`, `RabbitMQ`, `API Gateway` and 2 databases. The API Gateway manages communication between these services, using HTTP for `Inventory` and RabbitMQ for `Billing`. The project is organized into docker images to start docker containers which simulate a production environment.
 
 ## 2. Getting Started <a name="getting-started"></a>
 
@@ -29,21 +29,21 @@ Make sure you have the following installed on your machine:
 - PostgreSQL
 - RabbitMQ
 - Postman
-- VirtualBox
-- Vagrant
+- Docker
+- Docker Compose
 
 ### Installation <a name="installation"></a>
 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/crud-master.git
+   git clone https://github.com/Zewasik/play-with-containers.git
    ```
 
 2. Navigate to the project directory:
 
    ```bash
-   cd crud-master
+   cd play-with-containers
    ```
 
 3. Create a `.env` file in the project root and configure the necessary environment variables. You can use `.example.env` for testing.
@@ -102,26 +102,33 @@ The `Billing` API processes messages received through RabbitMQ. It parses JSON m
 
 - RabbitMQ Queue: `billing_queue`
 
-## 4. Virtual Machines <a name="virtual-machines"></a>
+## 4. Docker Compose <a name="docker-compose"></a>
 
-The project uses VirtualBox and Vagrant to set up three VMs:
+The project uses Docker Compose to set up all microservices:
 
-- `gateway-vm`: Contains the API Gateway.
-- `inventory-vm`: Contains the `Inventory` API and the `movies` database.
-- `billing-vm`: Contains the `Billing` API, `orders` database, and RabbitMQ.
+- `api-gateway-app`: API Gateway.
+- `inventory-app`: `Inventory` API.
+- `inventory-database`: Contains the `movies` database.
+- `billing-app`: `Billing` API.
+- `billing-database`: Contains the `orders` database.
+- `rabbitmq`: Runs RabbitMQ service.
 
 ### Environment Variables
 
 Configure your environment variables in the `.env` file for centralized credential management.
 
-### Configuration of VMs
+### Configuration of images
 
-Use the `Vagrantfile` to create and start the VMs. Execute the following commands from the project root:
+Use the `docker-compose.yml` to create and start the services. Execute the following command from the project root:
 
 ```bash
-vagrant up --provider virtualbox   # Starts all VMs
-vagrant status                     # Shows VM status
-vagrant ssh <vm-name>              # Access a VM via SSH
+docker compose up
+```
+
+To stop and remove containers and volumes use: 
+
+```bash
+docker compose down -v
 ```
 
 ## 5. Project Organization <a name="project-organization"></a>
@@ -141,5 +148,5 @@ vagrant ssh <vm-name>              # Access a VM via SSH
 │       ├── ...
 ├── postman-config
 |   ├── ...
-└── Vagrantfile
+└── docker-compose.yml
 ```
