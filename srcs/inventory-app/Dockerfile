@@ -15,8 +15,6 @@ WORKDIR /app
 
 COPY --from=builder /app /app
 
-COPY package.json ./
-
 EXPOSE 8080
 
 CMD ["npm", "start"]

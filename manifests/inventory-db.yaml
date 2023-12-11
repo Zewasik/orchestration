@@ -1,0 +1,81 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: inventory-database
+  labels:
+    app: inventory-database
+spec:
+  replicas: 1
+  serviceName: inventory-database-service
+  selector:
+    matchLabels:
+      app: inventory-database
+  template:
+    metadata:
+      labels:
+        app: inventory-database
+    spec:
+      restartPolicy: "Always"
+      containers:
+        - name: inventory-database
+          image: postgres:13.9-alpine
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: inventory-db-volume
+            - name: init-scripts
+              mountPath: /docker-entrypoint-initdb.d/init.sql
+              readOnly: true
+              subPath: init.sql
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: inventory-db-secret
+                  key: inventory-db-username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: inventory-db-secret
+                  key: inventory-db-password
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: inventory-configmap
+                  key: inventory_database_name
+          resources:
+            limits:
+              cpu: 300m
+              memory: 500Mi
+      volumes:
+        - name: inventory-db-volume
+          persistentVolumeClaim:
+            claimName: inventory-db-volume
+        - name: init-scripts
+          configMap:
+            name: inventory-configmap
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-database-service
+spec:
+  selector:
+    app: inventory-database
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: inventory-db-volume
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-app
+  labels:
+    app: inventory-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory-app
+  template:
+    metadata:
+      labels:
+        app: inventory-app
+    spec:
+      initContainers:
+        - name: wait-for-db
+          image: busybox
+          env:
+            - name: INVENTORY_DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: inventory-configmap
+                  key: inventory_database_url
+          command:
+            [
+              "sh",
+              "-c",
+              "until nc -zv $INVENTORY_DB_HOST 5432; do echo 'Waiting for the database to be ready...'; sleep 2; done",
+            ]
+      containers:
+        - name: inventory-app
+          image: zewasik/inventory-app:1.0.1
+          ports:
+            - containerPort: 8080
+          env:
+            - name: INVENTORY_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: inventory-db-secret
+                  key: inventory-db-username
+            - name: INVENTORY_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: inventory-db-secret
+                  key: inventory-db-password
+            - name: INVENTORY_DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: inventory-configmap
+                  key: inventory_database_name
+            - name: INVENTORY_DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: inventory-configmap
+                  key: inventory_database_url
+          resources:
+            limits:
+              memory: 100Mi
+              cpu: 100m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-app-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: inventory-app
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: inventory-app-scaler
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: inventory-app
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60
