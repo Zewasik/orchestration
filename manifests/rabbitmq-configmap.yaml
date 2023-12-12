@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rabbitmq-configmap
+data:
+  rabbitmq_url: rabbitmq-service
+  rabbitmq_queue_name: billing_queue

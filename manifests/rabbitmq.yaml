@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rabbitmq
+  labels:
+    app: rabbitmq
+spec:
+  selector:
+    matchLabels:
+      app: rabbitmq
+  serviceName: rabbitmq-service
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: rabbitmq
+          image: rabbitmq:3.13.0-rc.2-alpine
+          env:
+            - name: RABBITMQ_QUEUE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: rabbitmq-configmap
+                  key: rabbitmq_queue_name
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "250m"
+          ports:
+            - containerPort: 5672
+            - containerPort: 15672
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-service
+spec:
+  selector:
+    app: rabbitmq
+  ports:
+    - name: rabbitmq-first-port
+      port: 5672
+      targetPort: 5672
+    - name: rabbitmq-second-port
+      port: 15672
+      targetPort: 15672

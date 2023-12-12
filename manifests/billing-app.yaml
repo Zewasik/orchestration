@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: billing-app
+  labels:
+    app: billing-app
+spec:
+  replicas: 1
+  serviceName: billing-app-service
+  selector:
+    matchLabels:
+      app: billing-app
+  template:
+    metadata:
+      labels:
+        app: billing-app
+    spec:
+      restartPolicy: Always
+      initContainers:
+        - name: wait-for-services
+          image: busybox
+          env:
+            - name: BILLING_DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: billing-configmap
+                  key: billing_database_url
+            - name: RABBITMQ_HOST_ADDRESS
+              valueFrom:
+                configMapKeyRef:
+                  name: rabbitmq-configmap
+                  key: rabbitmq_url
+          command:
+            [
+              "sh",
+              "-c",
+              "until nc -zv $BILLING_DB_HOST 5432 && nc -zv $RABBITMQ_HOST_ADDRESS 5672; do echo 'Waiting for the database and RabbitMQ to be ready...'; sleep 2; done",
+            ]
+      containers:
+        - name: billing-app
+          image: zewasik/billing-app:1.0.0
+          ports:
+            - containerPort: 8080
+          env:
+            - name: BILLING_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: billing-db-secret
+                  key: billing-db-username
+            - name: BILLING_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: billing-db-secret
+                  key: billing-db-password
+            - name: BILLING_DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: billing-configmap
+                  key: billing_database_name
+            - name: BILLING_DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: billing-configmap
+                  key: billing_database_url
+            - name: RABBITMQ_HOST_ADDRESS
+              valueFrom:
+                configMapKeyRef:
+                  name: rabbitmq-configmap
+                  key: rabbitmq_url
+            - name: RABBITMQ_QUEUE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: rabbitmq-configmap
+                  key: rabbitmq_queue_name
+          resources:
+            requests:
+              memory: 250Mi
+              cpu: 100m
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: billing-app-service
+spec:
+  selector:
+    app: billing-app
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
