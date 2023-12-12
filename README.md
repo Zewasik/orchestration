@@ -108,7 +108,8 @@ The project uses k3s to set up all microservices:
 ```console
 .
 ├── README.md
-├── .env
+├── manifests
+|   ├── ...
 ├── srcs
 │   ├── api-gateway
 │   │   ├── ...
@@ -118,5 +119,5 @@ The project uses k3s to set up all microservices:
 │       ├── ...
 ├── postman-config
 |   ├── ...
-└── docker-compose.yml
+└── Vagrantfile
 ```
