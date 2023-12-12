@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway-app
+  labels:
+    app: api-gateway-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-gateway-app
+  template:
+    metadata:
+      labels:
+        app: api-gateway-app
+    spec:
+      restartPolicy: Always
+      initContainers:
+        - name: wait-for-services
+          image: busybox
+          env:
+            - name: RABBITMQ_HOST_ADDRESS
+              valueFrom:
+                configMapKeyRef:
+                  name: rabbitmq-configmap
+                  key: rabbitmq_url
+            - name: INVENTORY_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: api-gateway-configmap
+                  key: inventory_app_url
+          command:
+            [
+              "sh",
+              "-c",
+              "until nc -zv $RABBITMQ_HOST_ADDRESS 5672 && nc -zv $INVENTORY_HOST 8080; do echo 'Waiting for the database to be ready...'; sleep 2; done",
+            ]
+      containers:
+        - name: api-gateway-app
+          image: zewasik/api-gateway-app:1.0.0
+          env:
+            - name: RABBITMQ_HOST_ADDRESS
+              valueFrom:
+                configMapKeyRef:
+                  name: rabbitmq-configmap
+                  key: rabbitmq_url
+            - name: RABBITMQ_QUEUE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: rabbitmq-configmap
+                  key: rabbitmq_queue_name
+            - name: INVENTORY_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: api-gateway-configmap
+                  key: inventory_app_url
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+          ports:
+            - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway-app-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: api-gateway-app
+  ports:
+    - port: 3000
+      targetPort: 3000
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: api-gateway-app-scaler
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: api-gateway-app
+  minReplicas: 1
+  maxReplicas: 3
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60

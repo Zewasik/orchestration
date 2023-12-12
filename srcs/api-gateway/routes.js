@@ -6,12 +6,14 @@ const router = express.Router()
 
 let channel
 amqp.connect(`amqp://${RABBITMQ_HOST_ADDRESS}`, (err, connection) => {
-  if (!err) {
-    connection.createChannel(async (err, newChannel) => {
-      channel = newChannel
-      newChannel.assertQueue(RABBITMQ_QUEUE_NAME)
-    })
+  if (err) {
+    throw new Error(err)
   }
+
+  connection.createChannel((err, newChannel) => {
+    channel = newChannel
+    newChannel.assertQueue(RABBITMQ_QUEUE_NAME)
+  })
 
   router.post("/", (req, res) => {
     try {

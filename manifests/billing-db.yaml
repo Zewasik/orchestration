@@ -46,7 +46,7 @@ spec:
                   key: billing_database_name
           resources:
             limits:
-              cpu: 300m
+              cpu: 150m
               memory: 500Mi
       volumes:
         - name: billing-db-volume

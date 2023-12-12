@@ -5,8 +5,8 @@ let em = {
   RABBITMQ_HOST_ADDRESS: process.env.RABBITMQ_HOST_ADDRESS || "localhost",
 }
 
-if (process.env.INVENTORY_HOST && process.env.INVENTORY_APP_PORT) {
-  em.PROXY_TARGET = `http://${process.env.INVENTORY_HOST}:${process.env.INVENTORY_APP_PORT}`
+if (process.env.INVENTORY_HOST) {
+  em.PROXY_TARGET = `http://${process.env.INVENTORY_HOST}:8080`
 }
 
 module.exports = Object.freeze(em)

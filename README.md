@@ -1,86 +1,74 @@
-# play-with-containers
+# Orchestrator
 
 This documentation will help you understand the architecture, setup, and usage of the movie streaming platform built using microservices infrastructure.
 
 ## Table of Contents
 
-1. [Project Overview](#project-overview)
-2. [Getting Started](#getting-started)
+1. [Project Overview](#1-project-overview)
+2. [Getting Started](#2-getting-started)
    - [Prerequisites](#prerequisites)
    - [Installation](#installation)
-3. [API Documentation](#api-documentation)
+3. [API Documentation](#3-api-documentation)
    - [API Gateway](#api-gateway)
    - [Inventory API](#inventory-api)
    - [Billing API](#billing-api)
-4. [Docker Compose](#docker-compose)
-5. [Project Organization](#project-organization)
+4. [Docker Compose](#4-k3s)
+5. [Project Organization](#5-project-organization)
 
-## 1. Project Overview <a name="project-overview"></a>
+## 1. Project Overview <a name="1-project-overview"></a>
 
-The play-with-containers project implements a movie streaming platform with six microservices: `Inventory`, `Billing`, `RabbitMQ`, `API Gateway` and 2 databases. The API Gateway manages communication between these services, using HTTP for `Inventory` and RabbitMQ for `Billing`. The project is organized into docker images to start docker containers which simulate a production environment.
+The orchestrator implements a movie streaming platform with six microservices: `Inventory`, `Billing`, `RabbitMQ`, `API Gateway`, and 2 databases. The API Gateway manages communication between these services, using HTTP for `Inventory` and RabbitMQ for `Billing`. The project is organized into Kubernetes and Vagrant to make deployment simpler.
 
-## 2. Getting Started <a name="getting-started"></a>
+## 2. Getting Started <a name="2-getting-started"></a>
 
 ### Prerequisites <a name="prerequisites"></a>
 
 Make sure you have the following installed on your machine:
 
-- Node.js 18.16
-- PostgreSQL
-- RabbitMQ
-- Postman
+- Kubectl
+- Vagrant
 - Docker
-- Docker Compose
+- Postman
 
 ### Installation <a name="installation"></a>
 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/Zewasik/play-with-containers.git
+   git clone https://github.com/Zewasik/orchestrator.git
    ```
 
 2. Navigate to the project directory:
 
    ```bash
-   cd play-with-containers
+   cd orchestrator
    ```
 
-3. Create a `.env` file in the project root and configure the necessary environment variables. You can use `.example.env` for testing.
-
-4. Install dependencies for each service:
+3. Create two nodes and cluster using the script:
 
    ```bash
-   cd srcs/api-gateway
-   npm install
-
-   cd ../inventory-app
-   npm install
-
-   cd ../billing-app
-   npm install
+   ./orchestrator.sh create
    ```
 
-5. Run the services locally:
+4. Apply manifest files to k3s:
 
    ```bash
-   # In srcs/api-gateway
-   npm start
-
-   # In srcs/inventory-app
-   npm start
-
-   # In srcs/billing-app
-   npm start
+   ./orchestrator.sh start
    ```
 
-6. Use Postman to test the APIs. You may use Postman configuration located at `postman-config` folder.
+5. The first start can take a few minutes. To ensure about service status, use:
 
-## 3. API Documentation <a name="api-documentation"></a>
+   ```bash
+   ./orchestrator.sh info
+   ```
+
+6. Use Postman to test the APIs. You may use the Postman configuration located at `postman-config` folder. Alternatively, you can use Swagger documentation [http://192.168.56.10:3000/api-docs](http://192.168.56.10:3000/api-docs)
+
+## 3. API Documentation <a name="3-api-documentation"></a>
 
 ### API Gateway <a name="api-gateway"></a>
 
-The API Gateway routes requests between the `Inventory` and `Billing` services. It uses a proxy system to forward requests to the appropriate service. API documentation is available in the OpenAPI format. Refer to [http://localhost:3000/api-docs](http://localhost:3000/api-docs) for detailed API documentation.
+The API Gateway routes requests between the `Inventory` and `Billing` services. It uses a proxy system to forward requests to the appropriate service. API documentation is available in the OpenAPI format. Refer to [http://192.168.56.10:3000/api-docs](http://192.168.56.10:3000/api-docs) for detailed API documentation.
 
 ### Inventory API <a name="inventory-api"></a>
 
@@ -102,9 +90,9 @@ The `Billing` API processes messages received through RabbitMQ. It parses JSON m
 
 - RabbitMQ Queue: `billing_queue`
 
-## 4. Docker Compose <a name="docker-compose"></a>
+## 4. k3s <a name="4-k3s"></a>
 
-The project uses Docker Compose to set up all microservices:
+The project uses k3s to set up all microservices:
 
 - `api-gateway-app`: API Gateway.
 - `inventory-app`: `Inventory` API.
@@ -113,25 +101,7 @@ The project uses Docker Compose to set up all microservices:
 - `billing-database`: Contains the `orders` database.
 - `rabbitmq`: Runs RabbitMQ service.
 
-### Environment Variables
-
-Configure your environment variables in the `.env` file for centralized credential management.
-
-### Configuration of images
-
-Use the `docker-compose.yml` to create and start the services. Execute the following command from the project root:
-
-```bash
-docker compose up
-```
-
-To stop and remove containers and volumes use: 
-
-```bash
-docker compose down -v
-```
-
-## 5. Project Organization <a name="project-organization"></a>
+## 5. Project Organization <a name="5-project-organization"></a>
 
 ### Overall File Structure
 

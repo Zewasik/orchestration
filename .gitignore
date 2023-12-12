@@ -132,3 +132,4 @@ dist
 package-lock.json
 .vagrant
 .vscode
+k3s
