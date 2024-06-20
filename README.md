@@ -1,4 +1,4 @@
-# Orchestrator
+# orchestration
 
 This documentation will help you understand the architecture, setup, and usage of the movie streaming platform built using microservices infrastructure.
 
